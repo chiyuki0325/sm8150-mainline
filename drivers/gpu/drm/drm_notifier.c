@@ -14,6 +14,7 @@
  */
 
 #include <linux/notifier.h>
+#include <drm/drm_notifier.h>
 
 static BLOCKING_NOTIFIER_HEAD(mi_drm_notifier_list);
 
