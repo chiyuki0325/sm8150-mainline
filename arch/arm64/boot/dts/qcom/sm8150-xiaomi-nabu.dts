@@ -30,6 +30,7 @@
 /delete-node/ &spss_mem;
 /delete-node/ &cdsp_mem;
 
+
 / {
 	model = "Xiaomi Pad 5";
 	compatible = "xiaomi,nabu", "qcom,sm8150";
@@ -807,6 +808,11 @@
 &remoteproc_mpss {
 	status = "okay";
 	firmware-name = "qcom/sm8150/xiaomi/nabu/modem.mbn";
+};
+
+&remoteproc_slpi {
+ status = "okay";
+ firmware-name = "qcom/sm8150/xiaomi/nabu/slpi_nb.mbn";
 };
 
 &sound {
