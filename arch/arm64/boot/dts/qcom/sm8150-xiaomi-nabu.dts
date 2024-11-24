@@ -506,7 +506,7 @@
 		compatible = "lionsemi,ln8000";
 		reg = <0x51>;
 
-		status = "disabled";
+		status = "okay";
 
 		irq-gpios = <&tlmm 36 0x2002>;
 
@@ -708,7 +708,7 @@
 					 PDO_FIXED_DUAL_ROLE |
 					 PDO_FIXED_USB_COMM |
 					 PDO_FIXED_DATA_SWAP)
-					 PDO_VAR(5000, 12000, 3000)>;
+					 PDO_VAR(5000, 9000, 3000)>;
 
 		op-sink-microwatt = <10000000>;
 
@@ -811,7 +811,7 @@
 };
 
 &remoteproc_slpi {
- status = "okay";
+ status = "disabled";
  firmware-name = "qcom/sm8150/xiaomi/nabu/slpi_nb.mbn";
 };
 
@@ -1145,4 +1145,16 @@
 	vdd-1.8-xo-supply = <&vreg_l7a_1p8>;
 	vdd-1.3-rfa-supply = <&vreg_l2c_1p3>;
 	vdd-3.3-ch0-supply = <&vreg_l11c_3p3>;
+};
+
+&pm8150_rtc {
+	nvmem-cells = <&rtc_offset>;
+	nvmem-cell-names = "offset";
+	status = "okay";
+};
+&pm8150_sdam_2 {
+	status = "okay";
+	rtc_offset: rtc-offset@bc {
+		reg = <0xbc 0x4>;
+	};
 };

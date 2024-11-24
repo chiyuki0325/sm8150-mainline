@@ -1566,6 +1566,20 @@ static int ln8000_probe(struct i2c_client *client)
         dev_err(&client->dev, "%s: fail to alloc devm for ln8000_info\n", __func__);
         return -ENOMEM;
     }
+    info->dev = &client->dev;
+    info->client = client;
+
+    info->typec_psy = power_supply_get_by_phandle(info->dev->of_node,"usb-tcpm");
+
+    if(info->typec_psy == NULL){
+	ret = -(EPROBE_DEFER);
+	return ret;
+    }
+    if (IS_ERR(info->typec_psy)) {
+	    ret = PTR_ERR(info->typec_psy);
+	    dev_warn(info->dev, "Failed to get USB Type-C: %d\n", ret);
+	    info->typec_psy = NULL;
+    }
 
     info->pdata = devm_kzalloc(&client->dev, sizeof(struct ln8000_platform_data), GFP_KERNEL);
     if (info->pdata == NULL) {
@@ -1573,8 +1587,6 @@ static int ln8000_probe(struct i2c_client *client)
        kfree(info);
        return -ENOMEM;
     }
-    info->dev = &client->dev;
-    info->client = client;
     ret = ln8000_parse_dt(info);
     if (IS_ERR_VALUE((unsigned long)ret)) {
         ln_err("fail to parsed dt\n");
@@ -1625,18 +1637,9 @@ static int ln8000_probe(struct i2c_client *client)
 
     determine_initial_status(info);
 
-    info->typec_psy = power_supply_get_by_phandle(info->dev->of_node,
-							"usb-tcpm");
-	if (IS_ERR(info->typec_psy)) {
-		ret = PTR_ERR(info->typec_psy);
-		dev_warn(info->dev, "Failed to get USB Type-C: %d\n", ret);
-		info->typec_psy = NULL;
-	}
-
 	if (info->typec_psy) {
-		INIT_DELAYED_WORK(&info->status_changed_work,
-			ln8000_status_changed_worker);
-        INIT_DELAYED_WORK(&info->charge_work, psy_chg_get_ti_alarm_status);
+		INIT_DELAYED_WORK(&info->status_changed_work,ln8000_status_changed_worker);
+		INIT_DELAYED_WORK(&info->charge_work, psy_chg_get_ti_alarm_status);
 
 		info->nb.notifier_call = ln8000_notifier_call;
 		ret = power_supply_reg_notifier(&info->nb);
@@ -1646,11 +1649,11 @@ static int ln8000_probe(struct i2c_client *client)
 			return ret;
 		}
 
-        if (info->volt_qual) {
-            ln_info("start charging on init\n");
-            psy_chg_set_charging_enable(info, true);
-            schedule_delayed_work(&info->charge_work, msecs_to_jiffies(0));
-        }
+		if (info->volt_qual) {
+			ln_info("start charging on init\n");
+			psy_chg_set_charging_enable(info, true);
+			schedule_delayed_work(&info->charge_work, msecs_to_jiffies(0));
+		}
 	}
 
     return 0;
